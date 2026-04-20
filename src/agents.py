@@ -14,7 +14,7 @@ except Exception:  # pragma: no cover - optional dependency in some environments
     SerperDevTool = None
 
 
-CLAUDE_MODEL = "anthropic/claude-3-5-sonnet-20240620"
+CLAUDE_MODEL = os.getenv("ANTHROPIC_MODEL", "anthropic/claude-sonnet-4-6")
 
 
 def _build_llm():
@@ -52,7 +52,7 @@ def create_director_agent() -> Agent:
         ),
         llm=_build_llm(),
         verbose=True,
-        allow_delegation=True,
+        allow_delegation=False,
     )
 
 
