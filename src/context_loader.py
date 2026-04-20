@@ -4,8 +4,7 @@ from typing import Any
 
 LOGGER = logging.getLogger(__name__)
 
-UPLOADS_PATH = Path("/home/ubuntu/Uploads")
-
+UPLOADS_PATH = "knowledge"
 _AGENT_FILENAMES = {
     "AGENTE - DIRETOR.md": "director_context",
     "AGENTE - PESQUISA.md": "research_context",
