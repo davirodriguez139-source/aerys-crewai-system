@@ -1,0 +1,24 @@
+# Environment and secrets
+.env
+.streamlit/secrets.toml
+
+# Python cache/build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Local virtual environments
+.venv/
+venv/
+
+# Databases and generated outputs
+data/*.db
+outputs/*.md
+
+# Logs
+*.log
+
+# OS files
+.DS_Store

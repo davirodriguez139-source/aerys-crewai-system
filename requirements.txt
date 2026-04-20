@@ -1,6 +1,6 @@
-streamlit
-crewai
-crewai-tools
-langchain_anthropic
-python-dotenv
-anthropic
+streamlit>=1.28.0
+crewai>=0.1.0
+crewai-tools>=0.1.0
+langchain-anthropic>=0.1.0
+anthropic>=0.7.0
+python-dotenv>=1.0.0

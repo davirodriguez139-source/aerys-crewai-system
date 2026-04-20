@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import queue
 import re
 import threading
@@ -20,7 +21,20 @@ from src.database import (
 )
 
 
-load_dotenv(PROJECT_ROOT / ".env")
+def configure_environment() -> None:
+    """Configure runtime env for local runs and Streamlit Cloud."""
+    try:
+        if "ANTHROPIC_API_KEY" in st.secrets:
+            os.environ["ANTHROPIC_API_KEY"] = st.secrets["ANTHROPIC_API_KEY"]
+            return
+    except Exception:
+        # No Streamlit secrets configured in local/dev execution.
+        pass
+
+    load_dotenv(PROJECT_ROOT / ".env")
+
+
+configure_environment()
 
 
 class QueueWriter:
