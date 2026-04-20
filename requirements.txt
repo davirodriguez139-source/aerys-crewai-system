@@ -3,3 +3,4 @@ crewai-tools
 anthropic
 python-dotenv
 langchain-anthropic
+streamlit

@@ -15,16 +15,20 @@ The system implements 4 agents based on your AERYS operating docs:
 ```text
 aerys_crewai_system/
 ├── main.py
+├── web_app.py
+├── run_dashboard.sh
 ├── requirements.txt
 ├── .env.example
 ├── README.md
 ├── config/
+├── data/                    # SQLite database (auto-created)
 ├── outputs/
 └── src/
     ├── __init__.py
     ├── agents.py
     ├── tasks.py
-    └── crew.py
+    ├── crew.py
+    └── database.py
 ```
 
 ---
@@ -69,7 +73,7 @@ SERPER_API_KEY=your_serper_key_here
 
 ---
 
-### Usage
+### Usage (CLI)
 
 Run:
 
@@ -95,6 +99,35 @@ Final output is saved as:
 ```text
 outputs/YYYY-MM-DD_campaign-name.md
 ```
+
+### Usage (Streamlit Dashboard)
+
+Start the dashboard:
+
+```bash
+streamlit run web_app.py
+```
+
+or:
+
+```bash
+./run_dashboard.sh
+```
+
+What the dashboard provides:
+
+- **New Campaign** tab with campaign goal input and generate button
+- **Real-time execution status** with progress logs from CrewAI
+- **Sidebar history + stats** (total runs and success rate)
+- **View Campaign** tab with metadata, markdown rendering, and file download
+- **Persistent run tracking** via SQLite (`data/campaigns.db`)
+
+By default, Streamlit opens at:
+
+```text
+http://localhost:8501
+```
+
 
 ---
 
