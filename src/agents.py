@@ -1,7 +1,9 @@
 import os
-from typing import List
+from typing import Any, Dict, List
 
 from crewai import Agent
+
+from src.context_loader import load_obsidian_context
 
 try:
     from crewai import LLM
@@ -36,39 +38,67 @@ def _optional_research_tools() -> List:
     return [SerperDevTool()]
 
 
-def create_director_agent() -> Agent:
+def _compose_context_block(agent_context: str, brand_strategy: str) -> str:
+    agent_context = (agent_context or "").strip()
+    brand_strategy = (brand_strategy or "").strip()
+
+    sections: list[str] = []
+
+    if agent_context:
+        sections.append(
+            "Agent-specific operational memory loaded from Obsidian:\n"
+            f"{agent_context}"
+        )
+
+    if brand_strategy:
+        sections.append(
+            "Shared brand strategy and operating memory loaded from Obsidian:\n"
+            f"{brand_strategy}"
+        )
+
+    if not sections:
+        return (
+            "No Obsidian context was found. Operate cautiously and request clarification "
+            "whenever strategic details are missing."
+        )
+
+    return "\n\n---\n\n".join(sections)
+
+
+def create_director_agent(context_data: Dict[str, Any] | None = None) -> Agent:
+    context_data = context_data or load_obsidian_context()
+    context_block = _compose_context_block(
+        context_data.get("director_context", ""),
+        context_data.get("brand_strategy", ""),
+    )
+
     return Agent(
         role="AERYS Growth Director",
         goal=(
-            "Orchestrate the full marketing workflow and approve only outputs that can "
-            "drive profitable growth, conversion, and brand strength in the USA sleep "
-            "performance niche."
+            "Coordinate the full workflow, enforce quality standards, and approve only outputs "
+            "that are consistent with the loaded AERYS memory and campaign objective."
         ),
-        backstory=(
-            "You are the strategic brain of AERYS, a premium US biohacking brand selling "
-            "Sleep Strips (mouth tape). You coordinate Research, Copy, and Ads specialists, "
-            "enforce execution standards from the AERYS operating protocol, and reject generic "
-            "deliverables. You prioritize clear market positioning, realistic performance, and profit."
-        ),
+        backstory=context_block,
         llm=_build_llm(),
         verbose=True,
         allow_delegation=False,
     )
 
 
-def create_research_agent() -> Agent:
+def create_research_agent(context_data: Dict[str, Any] | None = None) -> Agent:
+    context_data = context_data or load_obsidian_context()
+    context_block = _compose_context_block(
+        context_data.get("research_context", ""),
+        context_data.get("brand_strategy", ""),
+    )
+
     return Agent(
         role="AERYS Market Intelligence Researcher",
         goal=(
-            "Uncover sharp, non-generic market insights about the US sleep strip category, "
-            "including trends, competitor gaps, customer pains, and positioning opportunities."
+            "Generate specific, evidence-driven insights aligned with the loaded brand memory, "
+            "highlighting market opportunities, competitor gaps, and actionable positioning angles."
         ),
-        backstory=(
-            "You are AERYS' competitive intelligence unit. You map competitor messaging, discover "
-            "high-value audience pains (e.g., mouth breathing, poor sleep quality, low daytime energy), "
-            "and identify profitable hooks for a premium biohacking audience. Your work is evidence-driven "
-            "and practical for direct-response execution."
-        ),
+        backstory=context_block,
         llm=_build_llm(),
         tools=_optional_research_tools(),
         verbose=True,
@@ -76,37 +106,56 @@ def create_research_agent() -> Agent:
     )
 
 
-def create_copy_agent() -> Agent:
+def create_copy_agent(context_data: Dict[str, Any] | None = None) -> Agent:
+    context_data = context_data or load_obsidian_context()
+    context_block = _compose_context_block(
+        context_data.get("copy_context", ""),
+        context_data.get("brand_strategy", ""),
+    )
+
     return Agent(
         role="AERYS Direct-Response Copywriter",
         goal=(
-            "Transform validated research into high-converting messaging for US customers: "
-            "headlines, offers, value stack, and product page-ready copy."
+            "Transform validated insights into conversion-focused messaging that follows the loaded "
+            "AERYS voice, strategic principles, and execution standards."
         ),
-        backstory=(
-            "You write persuasive conversion-first copy for AERYS. You combine direct-response "
-            "frameworks, premium branding, social proof, and psychological triggers without sounding "
-            "hyped or generic. You craft copy that moves a problem-aware audience toward immediate action."
-        ),
+        backstory=context_block,
         llm=_build_llm(),
         verbose=True,
         allow_delegation=False,
     )
 
 
-def create_ads_agent() -> Agent:
+def create_ads_agent(context_data: Dict[str, Any] | None = None) -> Agent:
+    context_data = context_data or load_obsidian_context()
+    context_block = _compose_context_block(
+        context_data.get("ads_context", ""),
+        context_data.get("brand_strategy", ""),
+    )
+
     return Agent(
         role="AERYS Performance Ads Creative Strategist",
         goal=(
-            "Convert copy into platform-ready ad scripts with powerful 0-3 second hooks, "
-            "clear structure, and strong conversion intent for US paid traffic."
+            "Convert strategy and copy into platform-ready ad assets with strong hooks, clear "
+            "structure, and conversion intent aligned to the loaded brand memory."
         ),
-        backstory=(
-            "You build scroll-stopping ad creatives for AERYS. Your scripts are optimized for "
-            "attention in the first 3 seconds, emotional resonance, and measurable response. "
-            "You produce practical ad assets that can be recorded and launched quickly."
-        ),
+        backstory=context_block,
         llm=_build_llm(),
         verbose=True,
         allow_delegation=False,
     )
+
+
+def create_agents(force_refresh_context: bool = False) -> dict[str, Agent]:
+    """Create all agents using the latest Obsidian context.
+
+    Set force_refresh_context=True once per crew run to guarantee fresh context from disk.
+    """
+    context_data = load_obsidian_context(force_refresh=force_refresh_context)
+
+    return {
+        "director": create_director_agent(context_data=context_data),
+        "research": create_research_agent(context_data=context_data),
+        "copy": create_copy_agent(context_data=context_data),
+        "ads": create_ads_agent(context_data=context_data),
+    }
